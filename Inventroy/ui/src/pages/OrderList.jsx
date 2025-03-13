@@ -1,92 +1,74 @@
-import React from 'react'
+import React, { useState, useEffect } from "react";
 import Navbar from '../compoents/Navbar'
 
-function OrderList() {
+const OrderDetails = () => {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const res = await fetch("/api/orderdetails");
+        const data = await res.json()
+        setOrders(data);
+      } catch (error) {
+        console.error("Error fetching Orders:", error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
+  }, []);
+
   return (
-   <>
-   <Navbar/>
-   <h1 className="font-extrabold mt-5 md:ml-[500px] text-xl">Orders</h1><br></br>
-    <table className=" border-collapse border border-black md:w-[1250px] w-[150px] md:ml-5 md:mr-5">
-        <tr className=" border-black border-2 bg-zinc-400 h-10">
-            <th className="md:pl-2 border border-black md:text-lg text-xs">Order Id</th>
-            <th className="md:pr-3 border border-black md:text-lg text-xs">Staff Id</th>
-            <th className="md:pr-5 border border-black md:text-lg text-xs">Staff Name</th>
-            <th className="md:pr-5 border border-black md:text-lg text-xs">Department</th>
-            <th className="md:pl-2 border border-black md:text-lg text-xs">No of Iteams Orded</th>
-            <th className="md:pr-10 border border-black md:text-lg text-xs">Order Date</th>
-            <th className="md:pr-10 border border-black md:text-lg text-xs">Status</th>
-            <th className="md:pl-2 border border-black md:text-lg text-xs">Action</th>
-        </tr>
-        <tr className=" border-black border-2 h-10">
-            <td className="md:pl-8 border border-black md:text-lg text-xs">1</td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">S.100</td>
-            <td className="md:pl-32 border border-black md:text-lg text-xs">Anjitha</td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">Emergency</td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">4</td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">03/04/25</td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">
-                <button className="bg-slate-600 text-white w-[85px] rounded-xl">Delivered</button></td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">
-                <button className="bg-slate-600 text-white w-[70px] rounded-xl">View</button></td>
-               
-        </tr >
-        <tr className=" border-black border-2 h-10">
-            <td className="md:pl-8 border border-black md:text-lg text-xs">2</td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">S.101</td>
-            <td className="md:pl-32 border border-black md:text-lg text-xs">Anamika</td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">General Medicine</td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">10</td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">13/02/25</td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">
-                <button className="bg-slate-600 text-white w-[85px] rounded-xl">Delivered</button></td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">
-                <button className="bg-slate-600 text-white w-[70px] rounded-xl">View</button></td>
-               
-        </tr >
-        <tr className=" border-black border-2 h-10">
-            <td className="md:pl-8 border border-black md:text-lg text-xs">3</td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">S.102</td>
-            <td className="md:pl-32 border border-black md:text-lg text-xs">Krishna</td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">Paediatric </td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">4</td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">10/05/25</td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">
-                <button className="bg-slate-600 text-white w-[85px] rounded-xl">Penting</button></td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">
-                <button className="bg-slate-600 text-white w-[70px] rounded-xl">View</button></td>
-                
-        </tr >
-        <tr className=" border-black border-2 h-10">
-            <td className="md:pl-8 border border-black md:text-lg text-xs">4</td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">S.104</td>
-            <td className="md:pl-32 border border-black md:text-lg text-xs">Anna</td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">Gynecology</td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">3</td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">01/07/25</td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">
-                <button className="bg-slate-600 text-white w-[85px] rounded-xl">Delivered</button></td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">
-                <button className="bg-slate-600 text-white w-[70px] rounded-xl">View</button></td>
-                
-        </tr >
-        <tr className=" border-black border-2 h-10">
-            <td className="md:pl-8 border border-black md:text-lg text-xs">5</td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">S.105</td>
-            <td className="md:pl-32 border border-black md:text-lg text-xs">Ranjana</td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs"></td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">4</td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">03/04/25</td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">
-                <button className="bg-slate-600 text-white w-[85px] rounded-xl">Delivered</button></td>
-            <td className="md:pl-8 border border-black md:text-lg text-xs">
-                <button className="bg-slate-600 text-white w-[70px] rounded-xl">View</button></td>
-            </tr >
-        
+    <>
+      <Navbar />
+      <div className="container mx-auto mt-5 p-4">
+        <h1 className="font-extrabold text-2xl text-center mb-4">📦 Orders List</h1>
 
+        {loading ? (
+          <p className="text-center text-lg">Loading orders...</p>
+        ) : error ? (
+          <p className="text-center text-red-600">{error}</p>
+        ) : orders.length === 0 ? (
+          <p className="text-center text-lg">No orders available.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="border-collapse border border-gray-700 w-full text-sm md:text-md">
+              <thead>
+                <tr className="bg-gray-800 text-white">
+                  <th className="p-3 border border-gray-600">Order ID</th>
+                  <th className="p-3 border border-gray-600">Product Name</th>
+                  <th className="p-3 border border-gray-600">Quantity</th>
+                  <th className="p-3 border border-gray-600">Order Date</th>
+                  <th className="p-3 border border-gray-600">User ID</th>
+                  <th className="p-3 border border-gray-600">User Name</th>
+                  <th className="p-3 border border-gray-600">Department</th>
+                  <th className="p-3 border border-gray-600">Phone Number</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orders.map((order) => (
+                  <tr key={order.orderId} className="border-gray-600 border hover:bg-gray-100">
+                    <td className="p-3 border border-gray-500">{order.orderId || "N/A"}</td>
+                    <td className="p-3 border border-gray-500">{order.productName || "N/A"}</td>
+                    <td className="p-3 border border-gray-500">{order.quantity || "N/A"}</td>
+                    <td className="p-3 border border-gray-500">{new Date(order.orderDate).toLocaleDateString()}</td>
+                    <td className="p-3 border border-gray-500">{order.userDetails?.userId || "N/A"}</td>
+                    <td className="p-3 border border-gray-500">{order.userDetails?.userName || "N/A"}</td>
+                    <td className="p-3 border border-gray-500">{order.userDetails?.department || "N/A"}</td>
+                    <td className="p-3 border border-gray-500">{order.userDetails?.phone || "N/A"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </>
+  );
+};
 
-    </table>
-   </>
-  )
-}
-
-export default OrderList
+export default OrderDetails;

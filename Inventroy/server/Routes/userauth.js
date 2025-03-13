@@ -18,8 +18,15 @@ userauth.post('/signup',async(req,res)=>{
         {
             res.status(400).send("This user name Already exists") //send a respons to the user status is a status code 400 means bad request
         }    
-        else{
-        
+        // else{
+            if(UserRole === 'Admin' )
+                {
+                    const existingadmin = await user.findOne({userRole:"Admin"})
+                    if(existingadmin)
+                    {
+                        return res.status(403).send("Admin already exist")
+                    }
+                }
             const newpassword=await bcrypt.hash(password,10)
             const newUser = new user({
             firstName: FirstName,
@@ -34,12 +41,14 @@ userauth.post('/signup',async(req,res)=>{
         await newUser.save();
         res.status(201).send("Sign up successfully")
     }
-    }
+    // }
     catch{
         res.status(500).send("Internal Server Error")
 
     }
 })
+
+
 
 
 
@@ -68,7 +77,7 @@ userauth.post('/login',async(req,res)=>{
 
                 });
                 
-                res.status(200).send("logged in successfuly");
+                res.status(200).json({success:true,message:"logged in successfuly,",userRole:result.userRole});
                 console.log(`${UserName},`)
                 console.log(result.userRole)
             }
@@ -86,22 +95,25 @@ userauth.post('/login',async(req,res)=>{
 
 
 
-userauth.get('/viewProfile',authenticate,usercheck,async(req,res)=>{
-    try{
-    const name =req.query.UserName;
-    const Details =await user.findOne({userName:name});
-    console.log(Details);
-        if(Details){
-            res.status(200).json({Details})
-        }
-        else{
-            res.status(404).json({msg:'no profile'})
-        }
-    }catch{
-        res.status(500).send("Internal server Error")
-    }
+userauth.get('/getuser', authenticate, async (req, res) => {
+    try {
+        const User = await user.findOne({ _id: req.userId }).select('-password'); // Ensuring correct query format
 
-})
+        if (User) {
+            res.json(User);
+            console.log("User Data:", User);
+        } else {
+            res.status(404).send("User not found");
+        }
+    } catch (error) {
+        console.error("Error fetching user:", error);
+        res.status(500).send("Server error");
+    }
+});
+
+
+
+
 
 
 userauth.post('/placeorder', authenticate, usercheck, async (req, res) => {

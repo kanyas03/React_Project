@@ -9,5 +9,5 @@ const inventory =new Schema({
      image: {type:String}
     
 })
-const addProduct = model('admin',inventory)
+const addProduct = model('product',inventory)
 export {addProduct}

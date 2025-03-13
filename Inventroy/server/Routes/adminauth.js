@@ -61,9 +61,10 @@ adminauth.post('/addproduct',authenticate,admincheck,upload.single("Product_img"
             }
         }
         catch (error) {
-            console.error("Error in /addproduct:", error);
-            res.status(500).send("Internal Server Error");
+            console.error("Error in /addproduct:", error.message);
+            res.status(500).json({ error: error.message });
         }
+        
         
 });
 
@@ -76,7 +77,7 @@ adminauth.get('/getProduct',async(req,res)=>{
         const Pname = req.query.P_Name;
         const result=await addProduct.find()
          if(result){
-            console.log(result)
+            //console.log(result)
             res.status(200).json({data:result})
         }
         else{
@@ -89,95 +90,128 @@ adminauth.get('/getProduct',async(req,res)=>{
 })
 
 
-adminauth.put('/updateProduct',authenticate,admincheck,async(req,res)=>{
-    try{
-        const {ProductName,ProductId,Category,Quantity}= req.body;
-           const result =await addProduct.findOne({p_Id:ProductId});
-           console.log(result)
-        
-           if(result){
-               result.p_Name=ProductName,
-               result.p_Id=ProductId;
-               result.p_category=Category;
-               result.p_quantity=Quantity;
-               console.log(result)
-
-               await result.save();
-               res.status(200).json({Msg:`Updated successfuly`})
-           }
-           else{
-               res.status(403).json({msg:"you are not allowed to do this"})
-           }
-       }
-       catch{
-           res.status(500).send("server Error")
-       }
-})
 
 
-
-
-adminauth.delete('/deleteProduct',authenticate,admincheck,async(req,res)=>{
-    try{
-        const {ProductId}=req.body;
-        const result = await addProduct.findOne({p_Id:ProductId})
-        if(result){
-            await addProduct.findOneAndDelete(ProductId);
-            res.status(200).send("Product Successfully deleted")
-
-        }else{
-            res.status(404).send("product not found")
-        }
-    }
-    catch{
-        res.status(500).send("Server Error")
-    }
-})
-
-
-
-adminauth.get('/orderdetails',authenticate, async (req, res) => {
+adminauth.get("/getProduct/:ProductId", async (req, res) => {
     try {
-      const { orderId } = req.query;
-  
-      if (!orderId) {
-        return res.status(400).send("Order ID is required");
-      }
-  
-      
-      const order = await placeorder.findById(orderId);
-  
-      
-      console.log(order);  
-  
-      if (!order) {
-        return res.status(404).send("Order not found");
-      }
-  
-      if (!order.userId) {
-        return res.status(404).send("User associated with this order not found");
-      }
-  
-      // Now, populate the userId reference
-      await order.populate('userId', 'userId userName department phoneNumber');
-  
-      res.status(200).json({
-        orderId: order._id,
-        productName: order.p_Name,
-        quantity: order.p_quantity,
-        orderDate: order.orderDate,
-        status: order.status,
-        userDetails: {
-          userId: order.userId.userId,
-          userName: order.userId.userName,
-          department: order.userId.department,
-          phoneNumber: order.userId.phoneNumber,
+        const { ProductId } = req.params;
+        console.log("Fetching product with ID:", ProductId);
+        const product = await addProduct.findOne({ p_Id: ProductId });
+
+        if (!product) {
+            return res.status(404).json({ message: "Product not found" });
         }
-      });
+
+        res.json(product);
     } catch (error) {
-      console.error("Error occurred:", error);
-      res.status(500).send("Internal Server Error");
+        console.error("Error fetching product:", error);
+        res.status(500).json({ message: "Server error", error });
     }
-  });
+});
+
+
+
+adminauth.put("/updateProduct/:ProductId",authenticate,admincheck,upload.single("Product_img"), async (req, res) => {
+    try {
+        console.log("Received Data:", req.body);
+        console.log("ProductId from params:", req.params.ProductId);
+
+        const { ProductId } = req.params;
+        const { p_Name, p_category, p_quantity } = req.body;
+
+        if (!p_Name || !p_category || !p_quantity) {
+            return res.status(400).json({ msg: "All fields are required" });
+        }
+
+        const updatedProduct = await addProduct.findOneAndUpdate(
+            { p_Id: ProductId },
+            { p_Name, p_category, p_quantity },
+            { new: true }
+        );
+
+        if (!updatedProduct) {
+            return res.status(404).json({ msg: "Product not found" });
+        }
+
+        res.json({ msg: "Product updated successfully", updatedProduct });
+    } catch (error) {
+        console.error("Error updating product:", error);
+        res.status(500).json({ msg: "Server error", error });
+    }
+});
+
+
+
+
+
+
+
+
+
+adminauth.delete('/deleteProduct/:ProductId', authenticate, admincheck, async (req, res) => {
+    try {
+        const { ProductId } = req.params; 
+        const result = await addProduct.findOne({ p_Id: ProductId });
+
+        if (result) {
+            await addProduct.findOneAndDelete({ p_Id: ProductId }); 
+            res.status(200).send("Product Successfully deleted");
+        } else {
+            res.status(404).send("Product not found");
+        }
+    } catch (error) {
+        console.error("Error deleting product:", error);
+        res.status(500).send("Server Error");
+    }
+});
+
+
+
+
+
+adminauth.get('/orderdetails', authenticate, async (req, res) => {
+    try {
+        // Fetch orders with populated user details
+        const orders = await placeorder.find()
+            .populate({
+                path: 'userId',
+                select: '_id userName dept Ph firstName lastName'
+            });
+
+        // Debugging: Log the fetched data
+        console.log("Fetched Orders:", JSON.stringify(orders, null, 2));
+
+        if (!orders || orders.length === 0) {
+            return res.status(404).json({ message: "No orders found" });
+        }
+
+        // Format response
+        const formattedOrders = orders.map(order => ({
+            orderId: order._id,
+            productName: order.p_Name,
+            quantity: order.p_quantity,
+            orderDate: order.orderDate,
+            userDetails: order.userId ? {
+                userId: order.userId._id,
+                userName: order.userId.userName,
+                department: order.userId.dept,
+                phone: order.userId.Ph
+            } : null
+        }));
+
+        res.status(200).json(formattedOrders);
+    } catch (error) {
+        console.error("Error occurred:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+
+
+
+
+
+
+
   
 export {adminauth}
